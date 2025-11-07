@@ -45,12 +45,18 @@ class TesyOldApi:
                 ATTR_MAC: data["devstat"]["macaddr"],
                 ATTR_DEVICE_ID: data["devstat"]["devid"].split("-")[0],
                 ATTR_MODE: str(int(data["status"]["mode"]) - 1),
-                ATTR_CURRENT_TEMP: data["status"]["gradus"],
-                ATTR_TARGET_TEMP: data["status"]["ref_gradus"],
-                ATTR_BOOST: str(data["status"]["boost"]),
+                ATTR_CURRENT_TEMP: data["status"].get("gradus", data["status"].get("cur_shower", 0)),
+                ATTR_TARGET_TEMP: data["status"].get("ref_gradus", data["status"].get("ref_shower")),
                 ATTR_POWER: onoff[data["status"]["power_sw"]],
             }
         )
+
+        if "boost" in data["status"]:
+            o.update(
+                {
+                    ATTR_BOOST: str(data["status"]["boost"])
+                }
+            )
 
         _LOGGER.debug(f"converted API: {str(o)}")
         return o
